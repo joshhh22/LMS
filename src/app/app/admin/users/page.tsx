@@ -49,15 +49,17 @@ export default function AdminUsersPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("siswa123");
   const [newRole, setNewRole] = useState<UserRole>("student");
 
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim() || !newEmail.trim()) return;
 
-    db.createUser(newName, newRole, newEmail);
+    db.createUser(newName, newRole, newEmail, newPassword.trim() || "siswa123");
     setNewName("");
     setNewEmail("");
+    setNewPassword("siswa123");
     setIsOpen(false);
   };
 
@@ -126,6 +128,22 @@ export default function AdminUsersPage() {
                   className="mt-1 text-xs"
                   required
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="uPass">Kata Sandi Awal Akun</Label>
+                <Input
+                  id="uPass"
+                  type="text"
+                  placeholder="siswa123"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="mt-1 text-xs"
+                  required
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Kata sandi yang digunakan siswa untuk login ke portal (bisa diubah).
+                </p>
               </div>
 
               <div>
