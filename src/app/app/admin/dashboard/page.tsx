@@ -18,7 +18,6 @@ import {
   Bell,
   MessageSquare,
   ShieldAlert,
-  ArrowRight,
   PlusCircle,
   Layers,
   Settings,
@@ -44,39 +43,39 @@ export default function AdminDashboard() {
   const auditLogs = db.getAuditLogs();
 
   return (
-    <div className="space-y-8">
-      {/* Admin Executive Header (Chunky Tactile Clay Hero) */}
-      <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white shadow-[0_16px_36px_-6px_rgba(30,27,75,0.4),inset_0_2px_4px_rgba(255,255,255,0.2),inset_0_-2px_4px_rgba(0,0,0,0.3)]">
+    <div className="space-y-6">
+      {/* Admin Executive Header — Clean Slate-900 */}
+      <div className="rounded-xl bg-slate-900 border border-slate-800 p-6 sm:p-7 text-white shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-          <div className="space-y-2.5">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/25 px-3.5 py-1 text-xs font-bold text-indigo-300 border border-indigo-400/30 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
+          <div className="space-y-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-800 px-3 py-0.5 text-xs font-medium text-slate-300 border border-slate-700">
               <Shield className="h-3.5 w-3.5 text-indigo-400" />
               Administrator Utama • Akses Penuh Sistem
             </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-xs">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
               Pusat Kendali EduFlow
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-xl font-normal leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-400 max-w-xl font-normal leading-relaxed">
               Kelola seluruh entitas sekolah: akun pengguna, rombel kelas, kurikulum ajar, perizinan, dan pemantauan audit keamanan.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2.5">
             <Link href="/app/admin/users">
-              <Button size="sm" className="clay-btn-primary text-xs font-bold">
-                <PlusCircle className="mr-1.5 h-4 w-4" /> Kelola Pengguna
+              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold">
+                <PlusCircle className="mr-1.5 h-3.5 w-3.5" /> Kelola Pengguna
               </Button>
             </Link>
             <Link href="/app/admin/audit-logs">
-              <Button size="sm" variant="outline" className="border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-2xl shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)]">
-                <ShieldAlert className="mr-1.5 h-4 w-4" /> Buka Audit Log
+              <Button size="sm" variant="outline" className="border-slate-700 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold">
+                <ShieldAlert className="mr-1.5 h-3.5 w-3.5" /> Buka Audit Log
               </Button>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Main KPI Row (Chunky 3D Clay Stat Cards) */}
+      {/* Main KPI Row — Clean Flat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Pengguna"
@@ -108,15 +107,13 @@ export default function AdminDashboard() {
         />
       </div>
 
-      {/* Module Navigation Grid (Full System Navigation with Chunky Clay Tiles) */}
+      {/* Module Navigation Grid */}
       <div>
-        <h2 className="text-base font-extrabold text-slate-900 mb-4 flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 shadow-[inset_0_1px_2px_rgba(255,255,255,1)]">
-            <Layers className="h-4 w-4" />
-          </div>
+        <h2 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+          <Layers className="h-4 w-4 text-indigo-600" />
           Akses Langsung Seluruh Modul EduFlow (Admin Privilege)
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5">
           {[
             { title: "Manajemen Pengguna", href: "/app/admin/users", icon: Users, count: `${profiles.length} Akun` },
             { title: "Daftar Kelas", href: "/app/admin/classes", icon: FolderTree, count: `${classes.length} Rombel` },
@@ -138,15 +135,15 @@ export default function AdminDashboard() {
             const Icon = mod.icon;
             return (
               <Link key={idx} href={mod.href} className="block group">
-                <div className="clay-card rounded-2xl p-4.5 hover:-translate-y-1 transition-all duration-150 h-full flex flex-col justify-between">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-700 shadow-[inset_0_1px_2px_rgba(255,255,255,1),0_2px_6px_rgba(99,102,241,0.12)] group-hover:bg-gradient-to-br group-hover:from-indigo-600 group-hover:to-indigo-700 group-hover:text-white group-hover:shadow-[0_6px_16px_-2px_rgba(99,102,241,0.35),inset_0_2px_4px_rgba(255,255,255,0.4)] transition-all">
-                      <Icon className="h-4.5 w-4.5" />
+                <div className="rounded-xl border border-slate-200 bg-white p-3.5 hover:border-slate-300 transition-colors h-full flex flex-col justify-between shadow-xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                      <Icon className="h-4 w-4" />
                     </div>
-                    <span className="text-[10px] font-extrabold text-slate-400 bg-slate-100/80 px-2 py-0.5 rounded-lg">{mod.count}</span>
+                    <span className="text-[10px] font-semibold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">{mod.count}</span>
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">
+                    <h3 className="text-xs font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors">
                       {mod.title}
                     </h3>
                   </div>
@@ -159,29 +156,27 @@ export default function AdminDashboard() {
 
       {/* Recent Administrative Audit Logs */}
       <Card>
-        <CardHeader className="pb-3 border-b border-slate-100/80 flex flex-row items-center justify-between">
-          <CardTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 shadow-[inset_0_1px_2px_rgba(255,255,255,1)]">
-              <ShieldAlert className="h-4 w-4" />
-            </div>
+        <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
+          <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-indigo-600" />
             Aktivitas Terkini (Audit Logs)
           </CardTitle>
-          <Link href="/app/admin/audit-logs" className="text-xs font-bold text-indigo-600 hover:text-indigo-800">
+          <Link href="/app/admin/audit-logs" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">
             Lihat Seluruh Log &rarr;
           </Link>
         </CardHeader>
-        <CardContent className="p-5 space-y-2.5">
+        <CardContent className="p-4 space-y-2">
           {auditLogs.slice(0, 5).map((log) => (
             <div
               key={log.id}
-              className="flex items-center justify-between rounded-2xl border border-white/90 bg-[#F8FAFD] p-3.5 text-xs shadow-[inset_0_1px_2px_rgba(255,255,255,1),0_2px_6px_rgba(100,116,139,0.03)]"
+              className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50/70 p-3 text-xs"
             >
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
-                  <Badge variant="indigo" className="text-[9px] font-mono font-bold">
+                  <Badge variant="indigo" className="text-[9px] font-mono">
                     {log.action}
                   </Badge>
-                  <span className="font-bold text-slate-800">
+                  <span className="font-semibold text-slate-800">
                     Oleh: {log.actor?.full_name || "Admin"}
                   </span>
                 </div>
@@ -189,7 +184,7 @@ export default function AdminDashboard() {
                   {JSON.stringify(log.metadata)}
                 </p>
               </div>
-              <span className="text-[11px] text-slate-400 font-semibold shrink-0">
+              <span className="text-[11px] text-slate-400 shrink-0">
                 {formatDate(log.created_at)}
               </span>
             </div>

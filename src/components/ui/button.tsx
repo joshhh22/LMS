@@ -4,32 +4,32 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer",
   {
     variants: {
       variant: {
         default:
-          "clay-btn-primary text-white border border-white/30",
+          "bg-indigo-600 text-white hover:bg-indigo-700 shadow-xs border border-indigo-700/20 active:translate-y-px",
         destructive:
-          "bg-gradient-to-b from-red-500 to-red-600 text-white border border-white/30 shadow-[inset_0_2px_3px_rgba(255,255,255,0.4),inset_0_-2px_4px_rgba(0,0,0,0.3),0_8px_18px_-3px_rgba(239,68,68,0.35)] hover:from-red-500 hover:to-red-700 active:translate-y-0.5 active:scale-[0.98]",
+          "bg-red-600 text-white hover:bg-red-700 shadow-xs border border-red-700/20 active:translate-y-px",
         outline:
-          "bg-white/90 text-slate-700 border-2 border-slate-200 shadow-[inset_0_2px_3px_rgba(255,255,255,1),inset_0_-2px_3px_rgba(148,163,184,0.15),0_4px_10px_-2px_rgba(100,116,139,0.08)] hover:bg-slate-50 hover:border-slate-300 active:translate-y-0.5 active:scale-[0.98]",
+          "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:text-slate-900 shadow-xs active:translate-y-px",
         secondary:
-          "clay-btn-secondary text-slate-800",
+          "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200/80 active:translate-y-px",
         ghost:
-          "text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 rounded-xl",
+          "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
         link:
           "text-indigo-600 underline-offset-4 hover:underline font-semibold",
         subtle:
-          "bg-gradient-to-b from-indigo-50 to-indigo-100/80 text-indigo-800 border border-indigo-200/80 shadow-[inset_0_2px_2px_rgba(255,255,255,0.9),0_4px_10px_-2px_rgba(99,102,241,0.12)] hover:bg-indigo-100 active:translate-y-0.5",
+          "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-100 active:translate-y-px",
         success:
-          "bg-gradient-to-b from-emerald-500 to-emerald-600 text-white border border-white/30 shadow-[inset_0_2px_3px_rgba(255,255,255,0.4),inset_0_-2px_4px_rgba(6,78,59,0.3),0_8px_18px_-3px_rgba(16,185,129,0.35)] hover:from-emerald-500 hover:to-emerald-700 active:translate-y-0.5",
+          "bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs border border-emerald-700/20 active:translate-y-px",
       },
       size: {
-        default: "h-11 px-5 py-2.5",
-        sm: "h-9 rounded-lg px-3.5 text-xs",
-        lg: "h-12 rounded-2xl px-7 text-base font-bold",
-        icon: "h-10 w-10 rounded-xl",
+        default: "h-9.5 px-4 py-2",
+        sm: "h-8 rounded-md px-3 text-xs",
+        lg: "h-11 rounded-lg px-6 text-sm font-bold",
+        icon: "h-9 w-9 rounded-lg",
       },
     },
     defaultVariants: {
