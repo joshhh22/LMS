@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/auth-context";
-import { db } from "@/lib/store";
+import { db, subscribeToStore } from "@/lib/store";
+import { Notification } from "@/types/database";
 import { Bell, Check, CheckCheck, ArrowRight, Award, MessageSquare, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,19 +13,24 @@ import { EmptyState } from "@/components/shared/empty-state";
 
 export default function NotificationsPage() {
   const { user } = useAuth();
-  const [refresh, setRefresh] = useState(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const notifications = db.getNotifications(user?.id);
+  useEffect(() => {
+    const loadNotifs = () => {
+      setNotifications(db.getNotifications(user?.id));
+    };
+
+    loadNotifs();
+    return subscribeToStore(loadNotifs);
+  }, [user?.id]);
 
   const handleMarkAll = () => {
     if (!user) return;
     db.markAllNotificationsAsRead(user.id);
-    setRefresh((r) => r + 1);
   };
 
   const handleMarkSingle = (id: string) => {
     db.markNotificationAsRead(id);
-    setRefresh((r) => r + 1);
   };
 
   const getIcon = (type: string) => {

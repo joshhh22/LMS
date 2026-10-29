@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/auth-context";
-import { db } from "@/lib/store";
+import { db, subscribeToStore } from "@/lib/store";
+import { Class } from "@/types/database";
 import { FolderTree, PlusCircle, Users, BookOpen, ArrowRight } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -21,7 +22,16 @@ import {
 
 export default function AdminClassesPage() {
   const { user } = useAuth();
-  const [classes, setClasses] = useState(db.getClasses());
+  const [classes, setClasses] = useState<Class[]>([]);
+
+  useEffect(() => {
+    const loadClasses = () => {
+      setClasses(db.getClasses());
+    };
+
+    loadClasses();
+    return subscribeToStore(loadClasses);
+  }, []);
 
   // Dialog State
   const [isOpen, setIsOpen] = useState(false);
@@ -35,7 +45,6 @@ export default function AdminClassesPage() {
     if (!name.trim()) return;
 
     db.createClass(name, academicYear, gradeLevel, description);
-    setClasses(db.getClasses());
     setName("");
     setDescription("");
     setIsOpen(false);

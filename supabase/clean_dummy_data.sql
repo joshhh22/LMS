@@ -93,3 +93,4 @@ VALUES (
 
 -- All dummy data has been successfully cleaned.
 -- Only the single clean Administrator account remains: admin@eduflow.school (Password: admin123).
+

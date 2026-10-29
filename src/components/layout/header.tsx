@@ -1,16 +1,29 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/auth-context";
-import { db } from "@/lib/store";
-import { Bell, GraduationCap } from "lucide-react";
+import { db, subscribeToStore } from "@/lib/store";
+import { Bell } from "lucide-react";
 
 export function Header() {
   const { user } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  const notifications = db.getNotifications(user?.id);
-  const unreadCount = notifications.filter((n) => !n.read_at).length;
+  useEffect(() => {
+    const updateUnread = () => {
+      if (user?.id) {
+        const notifications = db.getNotifications(user.id);
+        setUnreadCount(notifications.filter((n) => !n.read_at).length);
+      } else {
+        const notifications = db.getNotifications();
+        setUnreadCount(notifications.filter((n) => !n.read_at).length);
+      }
+    };
+
+    updateUnread();
+    return subscribeToStore(updateUnread);
+  }, [user?.id]);
 
   return (
     <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white/95 px-6 backdrop-blur-sm">

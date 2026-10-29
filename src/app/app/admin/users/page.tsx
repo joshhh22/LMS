@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
-import { db } from "@/lib/store";
-import { UserRole, UserStatus } from "@/types/database";
+import { db, subscribeToStore } from "@/lib/store";
+import { Profile, UserRole, UserStatus } from "@/types/database";
 import {
   Users,
   PlusCircle,
@@ -32,9 +32,18 @@ import { formatDate } from "@/lib/utils";
 
 export default function AdminUsersPage() {
   const { user } = useAuth();
-  const [profiles, setProfiles] = useState(db.getProfiles());
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+
+  useEffect(() => {
+    const loadProfiles = () => {
+      setProfiles(db.getProfiles());
+    };
+
+    loadProfiles();
+    return subscribeToStore(loadProfiles);
+  }, []);
 
   // Create User Dialog
   const [isOpen, setIsOpen] = useState(false);
@@ -47,7 +56,6 @@ export default function AdminUsersPage() {
     if (!newName.trim() || !newEmail.trim()) return;
 
     db.createUser(newName, newRole, newEmail);
-    setProfiles(db.getProfiles());
     setNewName("");
     setNewEmail("");
     setIsOpen(false);
@@ -61,7 +69,6 @@ export default function AdminUsersPage() {
         status: nextStatus,
       });
     }
-    setProfiles(db.getProfiles());
   };
 
   const filtered = profiles.filter((p) => {

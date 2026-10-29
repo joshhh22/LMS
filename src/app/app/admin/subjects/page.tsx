@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
-import { db } from "@/lib/store";
+import { db, subscribeToStore } from "@/lib/store";
+import { Subject } from "@/types/database";
 import { BookOpen, PlusCircle, CheckCircle2 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -21,7 +22,16 @@ import { formatDate } from "@/lib/utils";
 
 export default function AdminSubjectsPage() {
   const { user } = useAuth();
-  const [subjects, setSubjects] = useState(db.getSubjects());
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+
+  useEffect(() => {
+    const loadSubjects = () => {
+      setSubjects(db.getSubjects());
+    };
+
+    loadSubjects();
+    return subscribeToStore(loadSubjects);
+  }, []);
 
   // Dialog State
   const [isOpen, setIsOpen] = useState(false);
@@ -34,7 +44,6 @@ export default function AdminSubjectsPage() {
     if (!name.trim() || !code.trim()) return;
 
     db.createSubject(name, code, description);
-    setSubjects(db.getSubjects());
     setName("");
     setCode("");
     setDescription("");

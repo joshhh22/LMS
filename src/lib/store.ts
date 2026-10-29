@@ -48,7 +48,7 @@ import {
   UserRole,
 } from '@/types/database';
 
-// In-memory persistent state (persists across renders in server node process)
+// In-memory state defaults
 let profiles = [...INITIAL_PROFILES];
 let subjects = [...INITIAL_SUBJECTS];
 let classes = [...INITIAL_CLASSES];
@@ -91,38 +91,118 @@ let xpEvents = [...INITIAL_XP_EVENTS];
 let notifications = [...INITIAL_NOTIFICATIONS];
 let auditLogs = [...INITIAL_AUDIT_LOGS];
 
-// Current session user ID (defaults to student Andi Pratama for client preview, or easily switched)
-let currentUserId = '00000000-0000-0000-0000-000000000004';
+// Current session user ID
+let currentUserId = '00000000-0000-0000-0000-000000000001';
+
+// ============================================================================
+// BROWSER LOCALSTORAGE PERSISTENCE (PREVENTS ROLLBACK ON REFRESH)
+// ============================================================================
+const STORAGE_PREFIX = 'eduflow_store_';
+
+function getStored<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const item = window.localStorage.getItem(STORAGE_PREFIX + key);
+    return item ? JSON.parse(item) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function setStored<T>(key: string, value: T): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value));
+    window.dispatchEvent(new CustomEvent('eduflow_store_updated', { detail: { key } }));
+  } catch {
+    // ignore
+  }
+}
+
+export function subscribeToStore(callback: (key?: string) => void) {
+  if (typeof window === 'undefined') return () => {};
+  const handler = (event: Event) => {
+    const detailKey = (event as CustomEvent).detail?.key;
+    callback(detailKey);
+  };
+  const storageHandler = () => callback();
+  window.addEventListener('eduflow_store_updated', handler);
+  window.addEventListener('storage', storageHandler);
+  return () => {
+    window.removeEventListener('eduflow_store_updated', handler);
+    window.removeEventListener('storage', storageHandler);
+  };
+}
+
+let isInitialized = false;
+
+function ensureInitialized() {
+  if (typeof window === 'undefined') return;
+  if (!isInitialized) {
+    isInitialized = true;
+    profiles = getStored('profiles', profiles);
+    subjects = getStored('subjects', subjects);
+    classes = getStored('classes', classes);
+    classSubjects = getStored('classSubjects', classSubjects);
+    enrollments = getStored('enrollments', enrollments);
+    courses = getStored('courses', courses);
+    lessons = getStored('lessons', lessons);
+    materials = getStored('materials', materials);
+    assignments = getStored('assignments', assignments);
+    submissions = getStored('submissions', submissions);
+    quizzes = getStored('quizzes', quizzes);
+    quizQuestions = getStored('quizQuestions', quizQuestions);
+    quizAttempts = getStored('quizAttempts', quizAttempts);
+    quizResponses = getStored('quizResponses', quizResponses);
+    announcements = getStored('announcements', announcements);
+    discussions = getStored('discussions', discussions);
+    discussionReplies = getStored('discussionReplies', discussionReplies);
+    badges = getStored('badges', badges);
+    studentBadges = getStored('studentBadges', studentBadges);
+    xpEvents = getStored('xpEvents', xpEvents);
+    notifications = getStored('notifications', notifications);
+    auditLogs = getStored('auditLogs', auditLogs);
+    currentUserId = getStored('currentUserId', currentUserId);
+  }
+}
 
 export const db = {
   // Profiles & Auth
   getCurrentUser(): Profile {
-    return profiles.find((p) => p.id === currentUserId) || profiles[3];
+    ensureInitialized();
+    return profiles.find((p) => p.id === currentUserId) || profiles[0];
   },
 
   setCurrentUser(userId: string) {
+    ensureInitialized();
     const user = profiles.find((p) => p.id === userId);
     if (user) {
       currentUserId = userId;
+      setStored('currentUserId', currentUserId);
     }
   },
 
   getProfiles(): Profile[] {
+    ensureInitialized();
     return [...profiles];
   },
 
   getProfileById(id: string): Profile | undefined {
+    ensureInitialized();
     return profiles.find((p) => p.id === id);
   },
 
   updateProfile(id: string, updates: Partial<Profile>) {
+    ensureInitialized();
     profiles = profiles.map((p) =>
       p.id === id ? { ...p, ...updates, updated_at: new Date().toISOString() } : p
     );
+    setStored('profiles', profiles);
     return profiles.find((p) => p.id === id);
   },
 
   createUser(fullName: string, role: UserRole, email: string) {
+    ensureInitialized();
     const newId = `user-${Date.now()}`;
     const newProfile: Profile = {
       id: newId,
@@ -134,6 +214,7 @@ export const db = {
       updated_at: new Date().toISOString(),
     };
     profiles.push(newProfile);
+    setStored('profiles', profiles);
 
     // Audit log
     this.addAuditLog(currentUserId, 'CREATE_USER', 'profile', newId, {
@@ -147,10 +228,12 @@ export const db = {
 
   // Subjects
   getSubjects(): Subject[] {
+    ensureInitialized();
     return [...subjects];
   },
 
   createSubject(name: string, code: string, description?: string) {
+    ensureInitialized();
     const newSubject: Subject = {
       id: `subj-${Date.now()}`,
       name,
@@ -161,12 +244,14 @@ export const db = {
       updated_at: new Date().toISOString(),
     };
     subjects.push(newSubject);
+    setStored('subjects', subjects);
     this.addAuditLog(currentUserId, 'CREATE_SUBJECT', 'subject', newSubject.id, { name, code });
     return newSubject;
   },
 
   // Classes
   getClasses(user?: Profile): Class[] {
+    ensureInitialized();
     const activeUser = user || this.getCurrentUser();
     if (activeUser.role === 'admin') {
       return [...classes];
@@ -185,10 +270,12 @@ export const db = {
   },
 
   getClassById(classId: string): Class | undefined {
+    ensureInitialized();
     return classes.find((c) => c.id === classId);
   },
 
   createClass(name: string, academicYear: string, gradeLevel: string, description?: string) {
+    ensureInitialized();
     const newClass: Class = {
       id: `class-${Date.now()}`,
       name,
@@ -200,12 +287,14 @@ export const db = {
       updated_at: new Date().toISOString(),
     };
     classes.push(newClass);
+    setStored('classes', classes);
     this.addAuditLog(currentUserId, 'CREATE_CLASS', 'class', newClass.id, { name, academicYear });
     return newClass;
   },
 
   // Class Subjects
   getClassSubjects(classId?: string): ClassSubject[] {
+    ensureInitialized();
     const list = classId ? classSubjects.filter((cs) => cs.class_id === classId) : classSubjects;
     return list.map((cs) => ({
       ...cs,
@@ -217,6 +306,7 @@ export const db = {
 
   // Enrollments
   getEnrollments(classId?: string): Enrollment[] {
+    ensureInitialized();
     const list = classId ? enrollments.filter((e) => e.class_id === classId) : enrollments;
     return list.map((e) => ({
       ...e,
@@ -226,9 +316,11 @@ export const db = {
   },
 
   enrollStudent(classId: string, studentId: string) {
+    ensureInitialized();
     const existing = enrollments.find((e) => e.class_id === classId && e.student_id === studentId);
     if (existing) {
       existing.status = 'active';
+      setStored('enrollments', enrollments);
       return existing;
     }
     const newEnrollment: Enrollment = {
@@ -239,6 +331,7 @@ export const db = {
       joined_at: new Date().toISOString(),
     };
     enrollments.push(newEnrollment);
+    setStored('enrollments', enrollments);
     this.addAuditLog(currentUserId, 'ENROLL_STUDENT', 'enrollment', newEnrollment.id, {
       class_id: classId,
       student_id: studentId,
@@ -248,6 +341,7 @@ export const db = {
 
   // Courses & Lessons & Materials
   getCourses(classSubjectId?: string): Course[] {
+    ensureInitialized();
     const list = classSubjectId
       ? courses.filter((c) => c.class_subject_id === classSubjectId)
       : courses;
@@ -259,6 +353,7 @@ export const db = {
   },
 
   getCourseById(courseId: string): Course | undefined {
+    ensureInitialized();
     const course = courses.find((c) => c.id === courseId);
     if (!course) return undefined;
     return {
@@ -269,6 +364,7 @@ export const db = {
   },
 
   createCourse(classSubjectId: string, title: string, description?: string) {
+    ensureInitialized();
     const newCourse: Course = {
       id: `course-${Date.now()}`,
       class_subject_id: classSubjectId,
@@ -281,11 +377,13 @@ export const db = {
       updated_at: new Date().toISOString(),
     };
     courses.push(newCourse);
+    setStored('courses', courses);
     this.addAuditLog(currentUserId, 'CREATE_COURSE', 'course', newCourse.id, { title });
     return newCourse;
   },
 
   getLessons(courseId: string): Lesson[] {
+    ensureInitialized();
     return lessons
       .filter((l) => l.course_id === courseId)
       .map((l) => ({
@@ -295,6 +393,7 @@ export const db = {
   },
 
   getLessonById(lessonId: string): Lesson | undefined {
+    ensureInitialized();
     const l = lessons.find((item) => item.id === lessonId);
     if (!l) return undefined;
     return {
@@ -304,6 +403,7 @@ export const db = {
   },
 
   createLesson(courseId: string, title: string, content: string, estimatedMinutes = 30) {
+    ensureInitialized();
     const newLesson: Lesson = {
       id: `lesson-${Date.now()}`,
       course_id: courseId,
@@ -317,11 +417,13 @@ export const db = {
       updated_at: new Date().toISOString(),
     };
     lessons.push(newLesson);
+    setStored('lessons', lessons);
     this.addAuditLog(currentUserId, 'CREATE_LESSON', 'lesson', newLesson.id, { title });
     return newLesson;
   },
 
   getMaterials(lessonId?: string): Material[] {
+    ensureInitialized();
     return lessonId ? materials.filter((m) => m.lesson_id === lessonId) : [...materials];
   },
 
@@ -331,6 +433,7 @@ export const db = {
     materialType: Material['material_type'],
     externalUrl?: string
   ) {
+    ensureInitialized();
     const newMat: Material = {
       id: `mat-${Date.now()}`,
       lesson_id: lessonId,
@@ -343,11 +446,13 @@ export const db = {
       updated_at: new Date().toISOString(),
     };
     materials.push(newMat);
+    setStored('materials', materials);
     return newMat;
   },
 
   // Assignments
   getAssignments(classSubjectId?: string): Assignment[] {
+    ensureInitialized();
     const list = classSubjectId
       ? assignments.filter((a) => a.class_subject_id === classSubjectId)
       : assignments;
@@ -368,6 +473,7 @@ export const db = {
   },
 
   getAssignmentById(id: string): Assignment | undefined {
+    ensureInitialized();
     const a = assignments.find((item) => item.id === id);
     if (!a) return undefined;
     const classSub = this.getClassSubjects().find((cs) => cs.id === a.class_subject_id);
@@ -392,6 +498,7 @@ export const db = {
     allow_late_submission?: boolean;
     submission_types?: string[];
   }) {
+    ensureInitialized();
     const newAsg: Assignment = {
       id: `asg-${Date.now()}`,
       class_subject_id: data.class_subject_id,
@@ -409,6 +516,7 @@ export const db = {
       updated_at: new Date().toISOString(),
     };
     assignments.push(newAsg);
+    setStored('assignments', assignments);
     this.addAuditLog(currentUserId, 'CREATE_ASSIGNMENT', 'assignment', newAsg.id, {
       title: data.title,
     });
@@ -417,6 +525,7 @@ export const db = {
 
   // Submissions
   getSubmissions(assignmentId?: string): AssignmentSubmission[] {
+    ensureInitialized();
     const list = assignmentId
       ? submissions.filter((s) => s.assignment_id === assignmentId)
       : submissions;
@@ -429,6 +538,7 @@ export const db = {
   },
 
   submitAssignment(assignmentId: string, studentId: string, textAnswer?: string, fileName?: string) {
+    ensureInitialized();
     const existingIndex = submissions.findIndex(
       (s) => s.assignment_id === assignmentId && s.student_id === studentId
     );
@@ -452,6 +562,7 @@ export const db = {
     } else {
       submissions.push(submissionData);
     }
+    setStored('submissions', submissions);
 
     // Award XP for submitting assignment (idempotent)
     this.grantXp(
@@ -478,6 +589,7 @@ export const db = {
   },
 
   gradeSubmission(submissionId: string, teacherId: string, score: number, feedback?: string) {
+    ensureInitialized();
     const sub = submissions.find((s) => s.id === submissionId);
     if (!sub) throw new Error('Submission not found');
 
@@ -487,6 +599,7 @@ export const db = {
     sub.graded_by = teacherId;
     sub.graded_at = new Date().toISOString();
     sub.updated_at = new Date().toISOString();
+    setStored('submissions', submissions);
 
     // Audit log
     this.addAuditLog(teacherId, 'GRADE_ASSIGNMENT', 'assignment_submission', submissionId, {
@@ -514,6 +627,7 @@ export const db = {
 
   // Quizzes
   getQuizzes(classSubjectId?: string): Quiz[] {
+    ensureInitialized();
     const list = classSubjectId
       ? quizzes.filter((q) => q.class_subject_id === classSubjectId)
       : quizzes;
@@ -529,6 +643,7 @@ export const db = {
   },
 
   getQuizById(id: string): Quiz | undefined {
+    ensureInitialized();
     const q = quizzes.find((item) => item.id === id);
     if (!q) return undefined;
     return {
@@ -554,6 +669,7 @@ export const db = {
       points: number;
     }>;
   }) {
+    ensureInitialized();
     const newQuiz: Quiz = {
       id: `quiz-${Date.now()}`,
       class_subject_id: data.class_subject_id,
@@ -572,6 +688,7 @@ export const db = {
       updated_at: new Date().toISOString(),
     };
     quizzes.push(newQuiz);
+    setStored('quizzes', quizzes);
 
     data.questions.forEach((q, idx) => {
       const qId = `q-${Date.now()}-${idx}`;
@@ -591,6 +708,7 @@ export const db = {
         explanation: 'Kunci jawaban diverifikasi guru.',
       };
     });
+    setStored('quizQuestions', quizQuestions);
 
     this.addAuditLog(currentUserId, 'CREATE_QUIZ', 'quiz', newQuiz.id, { title: data.title });
     return newQuiz;
@@ -601,6 +719,7 @@ export const db = {
     studentId: string,
     responses: Record<string, string> // question_id -> selected_option_id
   ) {
+    ensureInitialized();
     const quiz = quizzes.find((q) => q.id === quizId);
     if (!quiz) throw new Error('Quiz not found');
 
@@ -649,6 +768,8 @@ export const db = {
       created_at: new Date().toISOString(),
     };
     quizAttempts.push(attempt);
+    setStored('quizAttempts', quizAttempts);
+    setStored('quizResponses', quizResponses);
 
     // Grant XP for completing quiz
     this.grantXp(
@@ -669,6 +790,7 @@ export const db = {
 
   // Announcements
   getAnnouncements(classId?: string): Announcement[] {
+    ensureInitialized();
     const list = classId
       ? announcements.filter((a) => a.class_id === classId || a.class_id === null)
       : announcements;
@@ -681,6 +803,7 @@ export const db = {
   },
 
   createAnnouncement(title: string, body: string, classId?: string | null) {
+    ensureInitialized();
     const newAnn: Announcement = {
       id: `ann-${Date.now()}`,
       class_id: classId || null,
@@ -693,6 +816,7 @@ export const db = {
       updated_at: new Date().toISOString(),
     };
     announcements.unshift(newAnn);
+    setStored('announcements', announcements);
 
     this.addAuditLog(currentUserId, 'CREATE_ANNOUNCEMENT', 'announcement', newAnn.id, { title });
     return newAnn;
@@ -700,6 +824,7 @@ export const db = {
 
   // Discussions
   getDiscussions(classId?: string): Discussion[] {
+    ensureInitialized();
     const list = classId ? discussions.filter((d) => d.class_id === classId) : discussions;
 
     return list.map((d) => {
@@ -720,6 +845,7 @@ export const db = {
   },
 
   createDiscussion(classId: string, title: string, body: string) {
+    ensureInitialized();
     const newDisc: Discussion = {
       id: `disc-${Date.now()}`,
       class_id: classId,
@@ -731,10 +857,12 @@ export const db = {
       updated_at: new Date().toISOString(),
     };
     discussions.unshift(newDisc);
+    setStored('discussions', discussions);
     return newDisc;
   },
 
   replyDiscussion(discussionId: string, body: string) {
+    ensureInitialized();
     const newReply: DiscussionReply = {
       id: `reply-${Date.now()}`,
       discussion_id: discussionId,
@@ -745,11 +873,13 @@ export const db = {
       updated_at: new Date().toISOString(),
     };
     discussionReplies.push(newReply);
+    setStored('discussionReplies', discussionReplies);
     return newReply;
   },
 
   // Notifications
   getNotifications(userId?: string): Notification[] {
+    ensureInitialized();
     const targetId = userId || currentUserId;
     return notifications
       .filter((n) => n.recipient_id === targetId)
@@ -757,6 +887,7 @@ export const db = {
   },
 
   sendNotification(recipientId: string, type: string, title: string, body?: string, targetUrl?: string) {
+    ensureInitialized();
     const newNotif: Notification = {
       id: `notif-${Date.now()}`,
       recipient_id: recipientId,
@@ -768,27 +899,33 @@ export const db = {
       created_at: new Date().toISOString(),
     };
     notifications.unshift(newNotif);
+    setStored('notifications', notifications);
     return newNotif;
   },
 
   markNotificationAsRead(id: string) {
+    ensureInitialized();
     const notif = notifications.find((n) => n.id === id);
     if (notif) {
       notif.read_at = new Date().toISOString();
+      setStored('notifications', notifications);
     }
   },
 
   markAllNotificationsAsRead(userId?: string) {
+    ensureInitialized();
     const targetId = userId || currentUserId;
     notifications.forEach((n) => {
       if (n.recipient_id === targetId) {
         n.read_at = new Date().toISOString();
       }
     });
+    setStored('notifications', notifications);
   },
 
   // Gamification: XP & Badges
   getXpEvents(studentId?: string): XPEvent[] {
+    ensureInitialized();
     const targetId = studentId || currentUserId;
     return xpEvents
       .filter((e) => e.student_id === targetId)
@@ -796,6 +933,7 @@ export const db = {
   },
 
   getTotalXp(studentId?: string): number {
+    ensureInitialized();
     const targetId = studentId || currentUserId;
     return xpEvents
       .filter((e) => e.student_id === targetId)
@@ -809,6 +947,7 @@ export const db = {
     xpDelta: number,
     idempotencyKey: string
   ) {
+    ensureInitialized();
     // Check idempotency
     const existing = xpEvents.find((e) => e.idempotency_key === idempotencyKey);
     if (existing) {
@@ -825,15 +964,18 @@ export const db = {
       created_at: new Date().toISOString(),
     };
     xpEvents.push(newEvent);
+    setStored('xpEvents', xpEvents);
 
     return { duplicate: false, totalXp: this.getTotalXp(studentId) };
   },
 
   getBadges(): Badge[] {
+    ensureInitialized();
     return [...badges];
   },
 
   getStudentBadges(studentId?: string): StudentBadge[] {
+    ensureInitialized();
     const targetId = studentId || currentUserId;
     return studentBadges
       .filter((sb) => sb.student_id === targetId)
@@ -844,6 +986,7 @@ export const db = {
   },
 
   awardBadge(studentId: string, badgeCode: string) {
+    ensureInitialized();
     const badge = badges.find((b) => b.code === badgeCode);
     if (!badge) return;
 
@@ -857,6 +1000,7 @@ export const db = {
       badge_id: badge.id,
       awarded_at: new Date().toISOString(),
     });
+    setStored('studentBadges', studentBadges);
 
     if (badge.xp_bonus > 0) {
       this.grantXp(
@@ -875,6 +1019,7 @@ export const db = {
     level: number;
     rank: number;
   }> {
+    ensureInitialized();
     const enrolledStudents = this.getEnrollments(classId).map((e) => e.student!);
     // Deduplicate
     const uniqueStudents = Array.from(new Set(enrolledStudents.map((s) => s.id)))
@@ -897,6 +1042,7 @@ export const db = {
 
   // Audit Logs
   getAuditLogs(): AuditLog[] {
+    ensureInitialized();
     return auditLogs
       .map((log) => ({
         ...log,
@@ -912,6 +1058,7 @@ export const db = {
     entityId: string,
     metadata: Record<string, any> = {}
   ) {
+    ensureInitialized();
     const log: AuditLog = {
       id: `audit-${Date.now()}`,
       actor_id: actorId,
@@ -922,7 +1069,20 @@ export const db = {
       created_at: new Date().toISOString(),
     };
     auditLogs.unshift(log);
+    setStored('auditLogs', auditLogs);
     return log;
   },
-};
 
+  resetStore() {
+    if (typeof window !== 'undefined') {
+      try {
+        const keys = Object.keys(window.localStorage).filter((k) => k.startsWith(STORAGE_PREFIX));
+        keys.forEach((k) => window.localStorage.removeItem(k));
+      } catch {
+        // ignore
+      }
+    }
+    isInitialized = false;
+    ensureInitialized();
+  },
+};
