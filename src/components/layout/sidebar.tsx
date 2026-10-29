@@ -126,26 +126,26 @@ export function Sidebar() {
   const navGroups = getNavItems();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-slate-200 bg-white">
+    <aside className="fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-slate-200/80 bg-[#F8FAFD] shadow-[4px_0_24px_-10px_rgba(100,116,139,0.06)]">
       {/* Brand header */}
-      <div className="flex h-16 items-center gap-3 px-6 border-b border-slate-100">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm">
-          <GraduationCap className="h-5 w-5" />
+      <div className="flex h-16 items-center gap-3 px-5 border-b border-slate-200/60">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 text-white shadow-[0_6px_16px_-2px_rgba(99,102,241,0.35),inset_0_2px_4px_rgba(255,255,255,0.4),inset_0_-2px_4px_rgba(0,0,0,0.15)]">
+          <GraduationCap className="h-5 w-5 drop-shadow" />
         </div>
         <div>
-          <span className="text-lg font-bold tracking-tight text-slate-900">EduFlow</span>
-          <p className="text-[10px] font-medium text-indigo-600 leading-none">Learn Better, Grow</p>
+          <span className="text-lg font-extrabold tracking-tight text-slate-900">EduFlow</span>
+          <p className="text-[10px] font-bold text-indigo-600 leading-none">Learn Better, Grow</p>
         </div>
       </div>
 
       {/* User summary card */}
-      <div className="p-4 mx-3 my-2 rounded-xl bg-slate-50 border border-slate-200/70">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0">
+      <div className="p-3 mx-3 my-2.5 rounded-2xl bg-white/95 border border-white/90 shadow-[0_6px_18px_-4px_rgba(100,116,139,0.08),inset_0_2px_4px_rgba(255,255,255,1),inset_0_-1px_2px_rgba(148,163,184,0.1)]">
+        <div className="flex items-center gap-2.5">
+          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0 shadow-[inset_0_1px_2px_rgba(255,255,255,1),0_2px_4px_rgba(99,102,241,0.1)]">
             {user?.full_name?.substring(0, 2).toUpperCase() || "US"}
           </div>
           <div className="flex-1 overflow-hidden">
-            <p className="text-xs font-semibold text-slate-800 truncate">{user?.full_name}</p>
+            <p className="text-xs font-bold text-slate-800 truncate">{user?.full_name}</p>
             <div className="mt-0.5">
               <RoleBadge role={user?.role || "student"} />
             </div>
@@ -154,13 +154,13 @@ export function Sidebar() {
       </div>
 
       {/* Navigation list */}
-      <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6">
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-5">
         {navGroups.map((group, idx) => (
           <div key={idx} className="space-y-1">
-            <h4 className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <h4 className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
               {group.group}
             </h4>
-            <div className="space-y-0.5 mt-1">
+            <div className="space-y-1 mt-1">
               {group.items.map((item) => {
                 const isActive = pathname === item.href;
                 const Icon = item.icon;
@@ -169,14 +169,14 @@ export function Sidebar() {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
+                      "flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150",
                       isActive
-                        ? "bg-indigo-50 text-indigo-700 font-semibold"
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        ? "clay-pill-selected text-indigo-700 font-bold"
+                        : "text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-xs active:scale-[0.98]"
                     )}
                   >
-                    <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-indigo-600" : "text-slate-400")} />
-                    <span>{item.label}</span>
+                    <Icon className={cn("h-4 w-4 shrink-0 transition-colors", isActive ? "text-indigo-600" : "text-slate-400")} />
+                    <span className="truncate">{item.label}</span>
                   </Link>
                 );
               })}
@@ -186,10 +186,10 @@ export function Sidebar() {
       </div>
 
       {/* Bottom logout */}
-      <div className="p-4 border-t border-slate-100">
+      <div className="p-3 border-t border-slate-200/60">
         <button
           onClick={logout}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 hover:bg-red-50 hover:text-red-700 transition-colors"
+          className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 hover:bg-red-50 hover:text-red-700 transition-all active:scale-[0.98]"
         >
           <LogOut className="h-4 w-4 text-slate-400" />
           <span>Keluar Sesi</span>
@@ -198,3 +198,4 @@ export function Sidebar() {
     </aside>
   );
 }
+

@@ -26,3 +26,4 @@ export function RoleBadge({ role }: { role: UserRole | string }) {
       return <Badge variant="outline">{role}</Badge>;
   }
 }
+

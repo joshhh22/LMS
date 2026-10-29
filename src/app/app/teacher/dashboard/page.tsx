@@ -35,29 +35,29 @@ export default function TeacherDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Teacher Welcome Header */}
-      <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 p-6 sm:p-8 text-white shadow-sm">
+      {/* Teacher Welcome Header (Chunky Tactile Hero) */}
+      <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 p-6 sm:p-8 text-white shadow-[0_16px_36px_-6px_rgba(30,27,75,0.4),inset_0_2px_4px_rgba(255,255,255,0.2),inset_0_-2px_4px_rgba(0,0,0,0.3)]">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-          <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-indigo-200">
+          <div className="space-y-2.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1 text-xs font-bold text-indigo-200 border border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
               Portal Akademik Pendidik • Tahun Ajaran 2026/2027
             </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-xs">
               Selamat Mengajar, {user?.full_name}!
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
+            <p className="text-xs sm:text-sm text-slate-300 max-w-xl font-normal leading-relaxed">
               Pantau kemajuan siswa binaan, periksa pengumpulan tugas terbaru, dan kelola kuis kelas.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap gap-3">
             <Link href="/app/teacher/assignments">
-              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold">
+              <Button size="sm" className="clay-btn-primary text-xs font-bold">
                 <PlusCircle className="mr-1.5 h-4 w-4" /> Buat Tugas Baru
               </Button>
             </Link>
             <Link href="/app/teacher/quizzes">
-              <Button size="sm" variant="outline" className="border-slate-600 bg-white/10 hover:bg-white/20 text-white text-xs">
+              <Button size="sm" variant="outline" className="border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-2xl shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)]">
                 <PlusCircle className="mr-1.5 h-4 w-4" /> Buat Kuis
               </Button>
             </Link>
@@ -65,7 +65,7 @@ export default function TeacherDashboard() {
         </div>
       </div>
 
-      {/* Metrics Row */}
+      {/* Metrics Row (Chunky 3D Clay Stat Cards) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Kelas Binaan"
@@ -103,30 +103,32 @@ export default function TeacherDashboard() {
         <div className="lg:col-span-2 space-y-6">
           {/* Submissions Pending Grading */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-100">
-              <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
+            <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-100/80">
+              <CardTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-50 text-amber-600 shadow-[inset_0_1px_2px_rgba(255,255,255,1)]">
+                  <AlertCircle className="h-4 w-4" />
+                </div>
                 Submission Menunggu Evaluasi Guru ({pendingSubmissions.length})
               </CardTitle>
-              <Link href="/app/teacher/assignments" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+              <Link href="/app/teacher/assignments" className="text-xs font-bold text-indigo-600 hover:text-indigo-800">
                 Kelola Semua &rarr;
               </Link>
             </CardHeader>
-            <CardContent className="p-4 space-y-3">
+            <CardContent className="p-5 space-y-3.5">
               {pendingSubmissions.length === 0 ? (
-                <div className="text-center py-6 text-xs text-slate-400">
+                <div className="text-center py-6 text-xs font-semibold text-slate-400">
                   Semua pengumpulan tugas telah selesai diperiksa!
                 </div>
               ) : (
                 pendingSubmissions.map((sub) => (
                   <div
                     key={sub.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50/30 p-4"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-amber-200/80 bg-amber-50/40 p-4.5 shadow-[inset_0_1px_2px_rgba(255,255,255,1),0_4px_12px_rgba(245,158,11,0.06)]"
                   >
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
                         <Badge variant="warning" className="text-[10px]">Perlu Dinilai</Badge>
-                        <span className="text-xs text-slate-400 font-medium">
+                        <span className="text-xs text-slate-400 font-semibold">
                           {formatDate(sub.submitted_at)}
                         </span>
                       </div>
@@ -139,7 +141,7 @@ export default function TeacherDashboard() {
                     </div>
 
                     <Link href={`/app/teacher/submissions/${sub.id}/review`} className="shrink-0">
-                      <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs w-full sm:w-auto">
+                      <Button size="sm" className="clay-btn-primary text-xs font-bold w-full sm:w-auto">
                         Beri Nilai & Feedback &rarr;
                       </Button>
                     </Link>
@@ -151,34 +153,36 @@ export default function TeacherDashboard() {
 
           {/* Assigned Classes Overview */}
           <Card>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <FolderTree className="h-4 w-4 text-indigo-600" />
+            <CardHeader className="pb-3 border-b border-slate-100/80">
+              <CardTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 shadow-[inset_0_1px_2px_rgba(255,255,255,1)]">
+                  <FolderTree className="h-4 w-4" />
+                </div>
                 Kelas Binaan Saya
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-3">
+            <CardContent className="p-5 space-y-3.5">
               {assignedClasses.map((cls) => {
                 const enrollments = db.getEnrollments(cls.id);
                 return (
                   <div
                     key={cls.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-slate-200 p-4 bg-white hover:border-indigo-200 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-white/90 bg-[#F8FAFD] p-4.5 shadow-[inset_0_1px_2px_rgba(255,255,255,1),0_4px_12px_rgba(100,116,139,0.05)] hover:border-indigo-200 transition-all"
                   >
                     <div>
-                      <span className="text-[11px] font-semibold text-indigo-600 uppercase">
+                      <span className="text-[10px] font-extrabold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100">
                         {cls.academic_year} • {cls.grade_level}
                       </span>
-                      <h4 className="text-sm font-bold text-slate-900">{cls.name}</h4>
+                      <h4 className="text-sm font-bold text-slate-900 mt-1">{cls.name}</h4>
                       <p className="text-xs text-slate-500 mt-0.5">{cls.description}</p>
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs font-bold">
                         {enrollments.length} Siswa Terdaftar
                       </Badge>
                       <Link href={`/app/teacher/classes/${cls.id}`}>
-                        <Button size="sm" variant="outline" className="text-xs">
+                        <Button size="sm" variant="outline" className="text-xs font-bold">
                           Buka Kelas
                         </Button>
                       </Link>
@@ -194,23 +198,25 @@ export default function TeacherDashboard() {
         <div className="space-y-6">
           {/* Active Quizzes */}
           <Card>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <HelpCircle className="h-4 w-4 text-indigo-600" />
+            <CardHeader className="pb-3 border-b border-slate-100/80">
+              <CardTitle className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 shadow-[inset_0_1px_2px_rgba(255,255,255,1)]">
+                  <HelpCircle className="h-4 w-4" />
+                </div>
                 Kuis Aktif Terjadwal
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-3">
+            <CardContent className="p-5 space-y-3">
               {quizzes.map((quiz) => (
-                <div key={quiz.id} className="rounded-xl border border-slate-100 bg-slate-50/80 p-3 space-y-1 text-xs">
+                <div key={quiz.id} className="rounded-2xl border border-white/90 bg-[#F8FAFD] p-3.5 space-y-1.5 text-xs shadow-[inset_0_1px_2px_rgba(255,255,255,1),0_2px_8px_rgba(100,116,139,0.04)]">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-slate-800 line-clamp-1">{quiz.title}</span>
                     <Badge variant="indigo" className="text-[9px]">Aktif</Badge>
                   </div>
-                  <p className="text-[11px] text-slate-500">Durasi: {quiz.duration_minutes} Menit</p>
+                  <p className="text-[11px] text-slate-500 font-medium">Durasi: {quiz.duration_minutes} Menit</p>
                   <Link
                     href={`/app/teacher/quizzes/${quiz.id}/results`}
-                    className="inline-flex items-center font-semibold text-indigo-600 hover:text-indigo-800 pt-1 text-[11px]"
+                    className="inline-flex items-center font-bold text-indigo-600 hover:text-indigo-800 pt-1 text-[11px]"
                   >
                     Lihat Rekap Skor Siswa &rarr;
                   </Link>
@@ -221,22 +227,22 @@ export default function TeacherDashboard() {
 
           {/* Quick Actions Card */}
           <Card>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-sm font-bold">Aksi Cepat Pengajar</CardTitle>
+            <CardHeader className="pb-3 border-b border-slate-100/80">
+              <CardTitle className="text-sm font-extrabold text-slate-900">Aksi Cepat Pengajar</CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-2">
+            <CardContent className="p-5 space-y-2.5">
               <Link href="/app/teacher/materials" className="block">
-                <Button variant="outline" size="sm" className="w-full justify-start text-xs">
+                <Button variant="outline" size="sm" className="w-full justify-start text-xs font-bold">
                   <PlusCircle className="mr-2 h-3.5 w-3.5 text-indigo-600" /> Unggah Materi Belajar Baru
                 </Button>
               </Link>
               <Link href="/app/teacher/gradebook" className="block">
-                <Button variant="outline" size="sm" className="w-full justify-start text-xs">
+                <Button variant="outline" size="sm" className="w-full justify-start text-xs font-bold">
                   <Award className="mr-2 h-3.5 w-3.5 text-emerald-600" /> Rekap Nilai Satu Kelas
                 </Button>
               </Link>
               <Link href="/app/teacher/announcements" className="block">
-                <Button variant="outline" size="sm" className="w-full justify-start text-xs">
+                <Button variant="outline" size="sm" className="w-full justify-start text-xs font-bold">
                   <PlusCircle className="mr-2 h-3.5 w-3.5 text-blue-600" /> Kirim Pengumuman Kelas
                 </Button>
               </Link>

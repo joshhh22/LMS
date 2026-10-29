@@ -37,3 +37,4 @@ export function calculateLevel(xp: number): { level: number; currentXp: number; 
   const progress = Math.min(100, Math.max(0, Math.round((xpInLevel / (xpNeeded || 1)) * 100)));
   return { level, currentXp: xpInLevel, nextLevelXp: xpNeeded, progress };
 }
+

@@ -90,3 +90,4 @@ test('Permissions: Student cannot elevate their own role to Admin or Teacher', (
   const adminUser = { id: 'admin-1', role: 'admin', status: 'active' };
   assert.equal(can_elevate_role(adminUser, 'student-1', 'teacher'), true);
 });
+

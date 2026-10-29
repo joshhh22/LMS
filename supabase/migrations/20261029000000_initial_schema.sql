@@ -1062,3 +1062,4 @@ CREATE POLICY "student_badges_admin_manage" ON public.student_badges
 CREATE POLICY "audit_logs_admin_only" ON public.audit_logs
     FOR ALL TO authenticated
     USING (public.is_admin());
+

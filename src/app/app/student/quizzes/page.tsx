@@ -87,3 +87,4 @@ export default function StudentQuizzesPage() {
     </div>
   );
 }
+

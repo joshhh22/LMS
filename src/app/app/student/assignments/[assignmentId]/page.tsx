@@ -213,3 +213,4 @@ export default function AssignmentDetailPage() {
     </div>
   );
 }
+

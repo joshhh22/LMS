@@ -115,3 +115,4 @@ test('Business Rules: Level math calculates correct level and progression', () =
   assert.equal(l150.level, 2); // sqrt(1.5) + 1 = 2
   assert.ok(l150.progress > 0 && l150.progress <= 100);
 });
+

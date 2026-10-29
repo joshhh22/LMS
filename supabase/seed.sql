@@ -144,3 +144,4 @@ INSERT INTO public.audit_logs (id, actor_id, action, entity_type, metadata) VALU
 ('40404040-4040-4040-4040-404040404001', '00000000-0000-0000-0000-000000000001', 'CREATE_CLASS', 'class', '{"class_name":"Kelas 10-A Sains","academic_year":"2026/2027"}'::jsonb),
 ('40404040-4040-4040-4040-404040404002', '00000000-0000-0000-0000-000000000001', 'ASSIGN_TEACHER', 'class_teacher', '{"teacher_name":"Budi Santoso, M.Pd.","class_name":"Kelas 10-A Sains"}'::jsonb)
 ON CONFLICT (id) DO NOTHING;
+
