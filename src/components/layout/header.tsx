@@ -4,32 +4,23 @@ import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/auth-context";
 import { db } from "@/lib/store";
-import { Bell, Shield } from "lucide-react";
+import { Bell, GraduationCap } from "lucide-react";
 
 export function Header() {
-  const { user, switchUser, availableUsers } = useAuth();
+  const { user } = useAuth();
 
   const notifications = db.getNotifications(user?.id);
   const unreadCount = notifications.filter((n) => !n.read_at).length;
 
   return (
     <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white/95 px-6 backdrop-blur-sm">
-      {/* Role testing switcher notice */}
+      {/* Active Academic Session Indicator */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 rounded-lg bg-slate-50 border border-slate-200 px-3 py-1.5 text-xs text-slate-700">
-          <Shield className="h-3.5 w-3.5 text-indigo-600" />
-          <span className="font-semibold text-slate-700 text-xs hidden sm:inline">Role Mode:</span>
-          <select
-            value={user?.id || ""}
-            onChange={(e) => switchUser(e.target.value)}
-            className="rounded bg-white border border-slate-200 px-2 py-0.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-          >
-            {availableUsers.map((u) => (
-              <option key={u.id} value={u.id}>
-                [{u.role.toUpperCase()}] {u.full_name}
-              </option>
-            ))}
-          </select>
+        <div className="flex items-center gap-2 rounded-lg bg-slate-50 border border-slate-200/80 px-3 py-1.5 text-xs text-slate-600">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          <span className="font-semibold text-slate-700 hidden sm:inline">Tahun Ajaran 2026/2027</span>
+          <span className="text-slate-300 hidden sm:inline">•</span>
+          <span className="text-slate-500 font-medium">Semester Ganjil</span>
         </div>
       </div>
 
