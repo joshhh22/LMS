@@ -24,10 +24,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Initialize current user from store
-    const storedUser = db.getCurrentUser();
-    setUser(storedUser);
-    setIsLoading(false);
+    const initAuth = async () => {
+      try {
+        const supabase = createClient();
+        if (supabase) {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            const profiles = db.getProfiles();
+            let matched = profiles.find((p) => p.id === session.user.id);
+            if (!matched) {
+              matched = {
+                id: session.user.id,
+                full_name: (session.user.user_metadata?.full_name as string) || session.user.email?.split('@')[0] || 'Pengguna',
+                role: ((session.user.user_metadata?.role as UserRole) || 'admin'),
+                status: 'active',
+                email: session.user.email,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              };
+            }
+
+            if (matched.status === 'suspended') {
+              await supabase.auth.signOut();
+              db.setCurrentUser(null);
+              setUser(null);
+              setIsLoading(false);
+              return;
+            }
+
+            db.setCurrentUser(matched.id);
+            setUser(matched);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      // Standalone local store session
+      const storedUser = db.getCurrentUser();
+      if (storedUser) {
+        if (storedUser.status === 'suspended') {
+          db.setCurrentUser(null);
+          setUser(null);
+        } else {
+          setUser(storedUser);
+        }
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   const redirectUser = (role: UserRole) => {
@@ -43,12 +93,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password?: string): Promise<boolean> => {
     setIsLoading(true);
 
+    if (!email || !password) {
+      setIsLoading(false);
+      return false;
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
     try {
       // 1. Try real Supabase Auth if client is configured
       const supabase = createClient();
-      if (supabase && password) {
+      if (supabase) {
         const { data, error } = await supabase.auth.signInWithPassword({
-          email,
+          email: cleanEmail,
           password,
         });
 
@@ -58,12 +115,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!matched) {
             matched = {
               id: data.user.id,
-              full_name: (data.user.user_metadata?.full_name as string) || email.split('@')[0],
+              full_name: (data.user.user_metadata?.full_name as string) || cleanEmail.split('@')[0],
               role: ((data.user.user_metadata?.role as UserRole) || 'admin'),
               status: 'active',
+              email: cleanEmail,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             };
+          }
+
+          if (matched.status === 'suspended') {
+            await supabase.auth.signOut();
+            setIsLoading(false);
+            throw new Error('Akun Anda sedang ditangguhkan (suspended). Hubungi Administrator sekolah.');
           }
 
           db.setCurrentUser(matched.id);
@@ -72,37 +136,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           redirectUser(matched.role);
           return true;
         }
-      }
 
-      // 2. Fallback / local store matching
-      const profiles = db.getProfiles();
-      const lowerEmail = email.toLowerCase().trim();
+        // If Supabase returned invalid login credentials, reject immediately
+        if (error && error.message.toLowerCase().includes('invalid login credentials')) {
+          setIsLoading(false);
+          return false;
+        }
 
-      let matched: Profile | undefined;
+        // Check strict local credentials registry if not in Supabase yet
+        const localMatch = db.verifyCredentials(cleanEmail, password);
+        if (!localMatch) {
+          setIsLoading(false);
+          return false;
+        }
 
-      if (lowerEmail.includes('admin')) {
-        matched = profiles.find((p) => p.role === 'admin') || profiles[0];
-      } else if (lowerEmail.includes('guru') || lowerEmail.includes('teacher')) {
-        matched = profiles.find((p) => p.role === 'teacher') || profiles[0];
-      } else if (lowerEmail.includes('siswa') || lowerEmail.includes('student')) {
-        matched = profiles.find((p) => p.role === 'student') || profiles[0];
-      } else {
-        matched = profiles.find((p) => p.id === lowerEmail) || profiles[0];
-      }
+        if (localMatch.status === 'suspended') {
+          setIsLoading(false);
+          throw new Error('Akun Anda sedang ditangguhkan (suspended). Hubungi Administrator sekolah.');
+        }
 
-      if (matched) {
-        db.setCurrentUser(matched.id);
-        setUser(matched);
+        db.setCurrentUser(localMatch.id);
+        setUser(localMatch);
         setIsLoading(false);
-        redirectUser(matched.role);
+        redirectUser(localMatch.role);
         return true;
       }
 
+      // 2. Standalone / Local mode (Strict credential verification)
+      const matched = db.verifyCredentials(cleanEmail, password);
+      if (!matched) {
+        setIsLoading(false);
+        return false;
+      }
+
+      if (matched.status === 'suspended') {
+        setIsLoading(false);
+        throw new Error('Akun Anda sedang ditangguhkan (suspended). Hubungi Administrator sekolah.');
+      }
+
+      db.setCurrentUser(matched.id);
+      setUser(matched);
       setIsLoading(false);
-      return false;
-    } catch {
+      redirectUser(matched.role);
+      return true;
+    } catch (err: any) {
       setIsLoading(false);
-      return false;
+      throw err;
     }
   };
 
@@ -115,6 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // ignore
     }
+    db.setCurrentUser(null);
     setUser(null);
     router.push('/login');
   };

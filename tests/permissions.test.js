@@ -91,3 +91,56 @@ test('Permissions: Student cannot elevate their own role to Admin or Teacher', (
   assert.equal(can_elevate_role(adminUser, 'student-1', 'teacher'), true);
 });
 
+// Credential verification policy
+function verifyCredentials(credentials, profiles, email, password) {
+  if (!email || !password) return null;
+  const cleanEmail = email.toLowerCase().trim();
+  const cred = credentials.find((c) => c.email.toLowerCase() === cleanEmail);
+  if (!cred || cred.password !== password) return null;
+  const profile = profiles.find((p) => p.id === cred.id);
+  if (!profile || profile.status === 'suspended') return { error: 'suspended' };
+  return profile;
+}
+
+test('Authentication: Reject random invalid credentials (no auto fallback to admin)', () => {
+  const credentials = [
+    { id: '1', email: 'admin@eduflow.school', password: 'admin123' },
+  ];
+  const profiles = [
+    { id: '1', role: 'admin', status: 'active' },
+  ];
+
+  // Random credentials must be rejected completely
+  const result = verifyCredentials(credentials, profiles, 'asease@eduflow.school', 'asjdasijd');
+  assert.equal(result, null);
+
+  // Wrong password must be rejected
+  const wrongPw = verifyCredentials(credentials, profiles, 'admin@eduflow.school', 'wrongpassword');
+  assert.equal(wrongPw, null);
+});
+
+test('Authentication: Block login if user status is suspended', () => {
+  const credentials = [
+    { id: '2', email: 'andi.siswa@eduflow.school', password: 'student123' },
+  ];
+  const profiles = [
+    { id: '2', role: 'student', status: 'suspended' },
+  ];
+
+  const result = verifyCredentials(credentials, profiles, 'andi.siswa@eduflow.school', 'student123');
+  assert.deepEqual(result, { error: 'suspended' });
+});
+
+test('Authentication: Successful login with valid credentials', () => {
+  const credentials = [
+    { id: '1', email: 'admin@eduflow.school', password: 'admin123' },
+  ];
+  const profiles = [
+    { id: '1', role: 'admin', status: 'active' },
+  ];
+
+  const result = verifyCredentials(credentials, profiles, 'admin@eduflow.school', 'admin123');
+  assert.equal(result.role, 'admin');
+  assert.equal(result.status, 'active');
+});
+

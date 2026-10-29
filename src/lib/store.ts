@@ -92,7 +92,24 @@ let notifications = [...INITIAL_NOTIFICATIONS];
 let auditLogs = [...INITIAL_AUDIT_LOGS];
 
 // Current session user ID
-let currentUserId = '00000000-0000-0000-0000-000000000001';
+let currentUserId: string | null = null;
+
+export interface UserCredential {
+  id: string;
+  email: string;
+  password: string;
+}
+
+const INITIAL_CREDENTIALS: UserCredential[] = [
+  { id: '00000000-0000-0000-0000-000000000001', email: 'admin@eduflow.school', password: 'admin123' },
+  { id: '00000000-0000-0000-0000-000000000002', email: 'budi.guru@eduflow.school', password: 'teacher123' },
+  { id: '00000000-0000-0000-0000-000000000003', email: 'siti.guru@eduflow.school', password: 'teacher123' },
+  { id: '00000000-0000-0000-0000-000000000004', email: 'andi.siswa@eduflow.school', password: 'student123' },
+  { id: '00000000-0000-0000-0000-000000000005', email: 'dewi.siswa@eduflow.school', password: 'student123' },
+  { id: '00000000-0000-0000-0000-000000000006', email: 'fajar.siswa@eduflow.school', password: 'student123' },
+];
+
+let credentials = [...INITIAL_CREDENTIALS];
 
 // ============================================================================
 // BROWSER LOCALSTORAGE PERSISTENCE (PREVENTS ROLLBACK ON REFRESH)
@@ -162,24 +179,34 @@ function ensureInitialized() {
     xpEvents = getStored('xpEvents', xpEvents);
     notifications = getStored('notifications', notifications);
     auditLogs = getStored('auditLogs', auditLogs);
-    currentUserId = getStored('currentUserId', currentUserId);
+    credentials = getStored('credentials', credentials);
+    currentUserId = getStored('currentUserId', null);
   }
 }
 
 export const db = {
   // Profiles & Auth
-  getCurrentUser(): Profile {
+  getCurrentUser(): Profile | null {
     ensureInitialized();
-    return profiles.find((p) => p.id === currentUserId) || profiles[0];
+    if (!currentUserId) return null;
+    return profiles.find((p) => p.id === currentUserId) || null;
   },
 
-  setCurrentUser(userId: string) {
+  setCurrentUser(userId: string | null) {
     ensureInitialized();
-    const user = profiles.find((p) => p.id === userId);
-    if (user) {
-      currentUserId = userId;
-      setStored('currentUserId', currentUserId);
+    currentUserId = userId;
+    setStored('currentUserId', currentUserId);
+  },
+
+  verifyCredentials(email: string, password?: string): Profile | null {
+    ensureInitialized();
+    if (!email || !password) return null;
+    const cleanEmail = email.toLowerCase().trim();
+    const cred = credentials.find((c) => c.email.toLowerCase() === cleanEmail);
+    if (!cred || cred.password !== password) {
+      return null;
     }
+    return profiles.find((p) => p.id === cred.id) || null;
   },
 
   getProfiles(): Profile[] {
@@ -201,14 +228,16 @@ export const db = {
     return profiles.find((p) => p.id === id);
   },
 
-  createUser(fullName: string, role: UserRole, email: string) {
+  createUser(fullName: string, role: UserRole, email: string, password: string = 'password123') {
     ensureInitialized();
     const newId = `user-${Date.now()}`;
+    const cleanEmail = email.toLowerCase().trim();
     const newProfile: Profile = {
       id: newId,
       full_name: fullName,
       role,
       status: 'active',
+      email: cleanEmail,
       bio: `Akun ${role} baru untuk ${fullName}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -216,11 +245,14 @@ export const db = {
     profiles.push(newProfile);
     setStored('profiles', profiles);
 
+    credentials.push({ id: newId, email: cleanEmail, password });
+    setStored('credentials', credentials);
+
     // Audit log
-    this.addAuditLog(currentUserId, 'CREATE_USER', 'profile', newId, {
+    this.addAuditLog(currentUserId || 'system', 'CREATE_USER', 'profile', newId, {
       full_name: fullName,
       role,
-      email,
+      email: cleanEmail,
     });
 
     return newProfile;
@@ -250,10 +282,10 @@ export const db = {
   },
 
   // Classes
-  getClasses(user?: Profile): Class[] {
+  getClasses(user?: Profile | null): Class[] {
     ensureInitialized();
     const activeUser = user || this.getCurrentUser();
-    if (activeUser.role === 'admin') {
+    if (!activeUser || activeUser.role === 'admin') {
       return [...classes];
     }
     if (activeUser.role === 'teacher') {
@@ -1052,7 +1084,7 @@ export const db = {
   },
 
   addAuditLog(
-    actorId: string,
+    actorId: string | null,
     action: string,
     entityType: string,
     entityId: string,
@@ -1061,7 +1093,7 @@ export const db = {
     ensureInitialized();
     const log: AuditLog = {
       id: `audit-${Date.now()}`,
-      actor_id: actorId,
+      actor_id: actorId || '00000000-0000-0000-0000-000000000001',
       action,
       entity_type: entityType,
       entity_id: entityId,

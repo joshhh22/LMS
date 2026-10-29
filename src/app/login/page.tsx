@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-context";
 import { GraduationCap, ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,12 +10,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { user, login } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user && user.status === "active") {
+      if (user.role === "admin") router.push("/app/admin/dashboard");
+      else if (user.role === "teacher") router.push("/app/teacher/dashboard");
+      else router.push("/app/student/dashboard");
+    }
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +36,8 @@ export default function LoginPage() {
       if (!success) {
         setError("Alamat email atau kata sandi tidak valid. Silakan periksa kembali.");
       }
-    } catch {
-      setError("Terjadi kesalahan saat masuk sesi. Silakan coba lagi.");
+    } catch (err: any) {
+      setError(err?.message || "Terjadi kesalahan saat masuk sesi. Silakan coba lagi.");
     } finally {
       setIsLoading(false);
     }
